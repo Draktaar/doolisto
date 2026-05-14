@@ -1,0 +1,11 @@
+namespace backend.Entities;
+
+public class Todo
+{
+    public long Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public Priority Priority { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
