@@ -20,7 +20,7 @@ public class TodoHandler : ITodoHandler
         _idGenerator = idGenerator;
     }
 
-    public async Task<Todo> CreateAsync(CreateTodoRequest request, CancellationToken ct)
+    public async Task<TodoResponse> CreateAsync(CreateTodoRequest request, CancellationToken ct)
     {
         _logger.LogInformation("Creating todo: {Title}", request.Title);
 
@@ -36,17 +36,26 @@ public class TodoHandler : ITodoHandler
 
         _db.Todos.Add(todo);
         await _db.SaveChangesAsync(ct);
-        return todo;
+        return TodoResponse.FromTodo(todo);
     }
 
-    public async Task<List<Todo>> GetByPriorityAsync(IEnumerable<Priority> priorities, CancellationToken ct)
+    public async Task<List<TodoResponse>> GetByPriorityAsync(IEnumerable<Priority> priorities, CancellationToken ct)
     {
         _logger.LogInformation("Getting a list todo by priorities: {Priorities}", string.Join(", ", priorities));
 
-        return await _db.Todos.Where(t => priorities.Contains(t.Priority)).ToListAsync(ct);
+        return await _db.Todos
+            .Where(t => priorities.Contains(t.Priority))
+            .Select(t => new TodoResponse(
+                t.Id,
+                t.Title,
+                t.Description,
+                t.Priority,
+                t.CreatedAt,
+                t.UpdatedAt))
+            .ToListAsync(ct);
     }
 
-    public async Task<Todo?> UpdateAsync(long id, UpdateTodoRequest request, CancellationToken ct)
+    public async Task<TodoResponse?> UpdateAsync(long id, UpdateTodoRequest request, CancellationToken ct)
     {
         _logger.LogInformation("Updating todo: {Title}", request.Title);
 
@@ -61,7 +70,7 @@ public class TodoHandler : ITodoHandler
         todo.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
-        return todo;
+        return TodoResponse.FromTodo(todo);
     }
 
     public async Task<List<long>> DeleteAsync(IEnumerable<long> ids, CancellationToken ct)
