@@ -1,5 +1,7 @@
+using backend.Entities;
 using backend.Dtos;
 using backend.Handlers;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Endpoints;
 
@@ -11,6 +13,12 @@ public static class TodoEndpoints
         {
             var todo = await handler.CreateAsync(request, ct);
             return Results.Created($"/todos/{todo.Id}", todo);
+        });
+
+        app.MapGet("/todos", async ([FromQuery] Priority[] priority, ITodoHandler handler, CancellationToken ct) =>
+        {
+            var todos = await handler.GetByPriorityAsync(priority, ct);
+            return Results.Ok(todos);
         });
     }
 }
