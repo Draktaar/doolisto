@@ -1,6 +1,7 @@
 using backend.Dtos;
 using backend.Entities;
 using backend.Infrasctructure;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Handlers;
@@ -18,7 +19,7 @@ public class TodoHandler : ITodoHandler
 
     public async Task<Todo> CreateAsync(CreateTodoRequest request, CancellationToken ct)
     {
-        _logger.LogInformation("Creating todo with title: {Title}", request.Title);
+        _logger.LogInformation("Creating todo: {Title}", request.Title);
 
         var todo = new Todo
         {
@@ -40,5 +41,23 @@ public class TodoHandler : ITodoHandler
         _logger.LogInformation("Getting a list todo by priorities: {Priorities}", string.Join(", ", priorities));
 
         return await _db.Todos.Where(t => priorities.Contains(t.Priority)).ToListAsync(ct);
+    }
+
+    public async Task<Todo?> UpdateAsync(long id, UpdateTodoRequest request, CancellationToken ct)
+    {
+        _logger.LogInformation("Updating todo: {Title}", request.Title);
+
+        var todo = await _db.Todos.FindAsync(id, ct);
+
+        if (todo is null)
+            return null;
+
+        todo.Title = request.Title;
+        todo.Description = request.Description;
+        todo.Priority = request.Priority;
+        todo.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+        return todo;
     }
 }
