@@ -60,4 +60,25 @@ public class TodoHandler : ITodoHandler
         await _db.SaveChangesAsync(ct);
         return todo;
     }
+
+    public async Task<List<long>> DeleteAsync(IEnumerable<long> ids, CancellationToken ct)
+    {
+        _logger.LogInformation("Attempt to delete todo: {Ids}", string.Join(", ", ids));
+
+        var todos = await _db.Todos
+            .Where(t => ids.Contains(t.Id))
+            .ToListAsync(ct);
+
+        var blocked = todos
+            .Where(t => t.Priority == Priority.Critical || t.Priority == Priority.High)
+            .Select(t => t.Id)
+            .ToList();
+
+        if (blocked.Count > 0)
+            return blocked;
+
+        _db.Todos.RemoveRange(todos);
+        await _db.SaveChangesAsync(ct);
+        return blocked;
+    }
 }
