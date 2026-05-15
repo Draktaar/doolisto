@@ -1,6 +1,7 @@
 using backend.Dtos;
 using backend.Entities;
 using backend.Infrasctructure;
+using IdGen;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,11 +11,13 @@ public class TodoHandler : ITodoHandler
 {
     private readonly ILogger<TodoHandler>   _logger;
     private readonly TodoDbContext          _db;
+    private readonly IdGenerator            _idGenerator;
 
-    public TodoHandler(ILogger<TodoHandler> logger, TodoDbContext db)
+    public TodoHandler(ILogger<TodoHandler> logger, TodoDbContext db, IdGenerator idGenerator)
     {
         _logger = logger;
         _db = db;
+        _idGenerator = idGenerator;
     }
 
     public async Task<Todo> CreateAsync(CreateTodoRequest request, CancellationToken ct)
@@ -23,7 +26,7 @@ public class TodoHandler : ITodoHandler
 
         var todo = new Todo
         {
-            // Id = 1,
+            Id = _idGenerator.CreateId(),
             Title = request.Title,
             Description = request.Description,
             Priority = request.Priority,

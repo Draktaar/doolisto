@@ -70,6 +70,8 @@ Infrasctructure/TodoDbContext.cs
 Migrations/
  20260515194333_InitialCreate.cs
  20260515194333_InitialCreate.Designer.cs
+ 20260515211103_RemoveIdAutoIncrement.cs
+ 20260515211103_RemoveIdAutoIncrement.Designer.cs
  TodoDbContextModelSnapshot.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
@@ -388,6 +390,7 @@ Program.cs
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
 <NUGET>/
+ idgen/3.0.7/lib/netstandard2.0/IdGen.dll
  microsoft.entityframeworkcore.abstractions/10.0.8/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
  microsoft.entityframeworkcore.inmemory/10.0.8/lib/net10.0/Microsoft.EntityFrameworkCore.InMemory.dll
  microsoft.entityframeworkcore.relational/10.0.8/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll

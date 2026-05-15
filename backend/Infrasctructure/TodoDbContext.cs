@@ -12,5 +12,8 @@ public class TodoDbContext : DbContext
         modelBuilder.Entity<Todo>()
             .Property(t => t.Priority)
             .HasConversion<string>();
+        modelBuilder.Entity<Todo>()
+            .Property(t => t.Id)
+            .ValueGeneratedNever();
     }
 }
