@@ -1,8 +1,10 @@
+using backend.Common;
 using backend.Dtos;
+using backend.Endpoints;
 using backend.Entities;
 using backend.Infrasctructure;
+
 using IdGen;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Handlers;
@@ -20,7 +22,7 @@ public class TodoHandler : ITodoHandler
         _idGenerator = idGenerator;
     }
 
-    public async Task<TodoResponse> CreateAsync(CreateTodoRequest request, CancellationToken ct)
+    public async Task<Result<TodoResponse>> CreateAsync(CreateTodoRequest request, CancellationToken ct)
     {
         _logger.LogInformation("Creating todo: {Title}", request.Title);
 
@@ -36,7 +38,25 @@ public class TodoHandler : ITodoHandler
 
         _db.Todos.Add(todo);
         await _db.SaveChangesAsync(ct);
-        return TodoResponse.FromTodo(todo);
+        return Result<TodoResponse>.Success(TodoResponse.FromTodo(todo));
+    }
+
+    public async Task<Result<TodoResponse>> UpdateAsync(long id, UpdateTodoRequest request, CancellationToken ct)
+    {
+        _logger.LogInformation("Updating todo: {Title}", request.Title);
+
+        var todo = await _db.Todos.FindAsync(id, ct);
+
+        if (todo is null)
+            return Result<TodoResponse>.Failure(TodoErrors.NotFound);
+
+        todo.Title = request.Title;
+        todo.Description = request.Description;
+        todo.Priority = request.Priority;
+        todo.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+        return Result<TodoResponse>.Success(TodoResponse.FromTodo(todo));
     }
 
     public async Task<List<TodoResponse>> GetByPriorityAsync(IEnumerable<Priority> priorities, CancellationToken ct)
@@ -55,25 +75,8 @@ public class TodoHandler : ITodoHandler
             .ToListAsync(ct);
     }
 
-    public async Task<TodoResponse?> UpdateAsync(long id, UpdateTodoRequest request, CancellationToken ct)
-    {
-        _logger.LogInformation("Updating todo: {Title}", request.Title);
 
-        var todo = await _db.Todos.FindAsync(id, ct);
-
-        if (todo is null)
-            return null;
-
-        todo.Title = request.Title;
-        todo.Description = request.Description;
-        todo.Priority = request.Priority;
-        todo.UpdatedAt = DateTime.UtcNow;
-
-        await _db.SaveChangesAsync(ct);
-        return TodoResponse.FromTodo(todo);
-    }
-
-    public async Task<List<long>> DeleteAsync(IEnumerable<long> ids, CancellationToken ct)
+    public async Task<Result<List<long>>> DeleteAsync(IEnumerable<long> ids, CancellationToken ct)
     {
         _logger.LogInformation("Attempt to delete todo: {Ids}", string.Join(", ", ids));
 
@@ -87,10 +90,12 @@ public class TodoHandler : ITodoHandler
             .ToList();
 
         if (blocked.Count > 0)
-            return blocked;
+            return Result<List<long>>.Failure(TodoErrors.DeleteBlocked(blocked));
+
+        var deletedIds = todos.Select(t => t.Id).ToList();
 
         _db.Todos.RemoveRange(todos);
         await _db.SaveChangesAsync(ct);
-        return blocked;
+        return Result<List<long>>.Success(deletedIds);
     }
 }
