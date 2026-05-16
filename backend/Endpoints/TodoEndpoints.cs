@@ -11,6 +11,9 @@ public static class TodoEndpoints
     {
         app.MapPost("/todos", async (CreateTodoRequest request, ITodoHandler handler, CancellationToken ct) =>
         {
+            if (ValidationHelper.Validate(request) is { } errorResult)
+                return errorResult;
+
             var todo = await handler.CreateAsync(request, ct);
             return Results.Created($"/todos/{todo.Id}", todo);
         });
@@ -23,6 +26,9 @@ public static class TodoEndpoints
 
         app.MapPut("/todos/{id:long}", async (long id, UpdateTodoRequest request, ITodoHandler handler, CancellationToken ct) =>
         {
+            if (ValidationHelper.Validate(request) is { } errorResult)
+                return errorResult;
+
             var todo = await handler.UpdateAsync(id, request, ct);
             return todo is null ? Results.NotFound() : Results.Ok(todo);
         });

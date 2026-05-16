@@ -59,7 +59,9 @@ Dtos/
  CreateTodoRequest.cs
  TodoResponse.cs
  UpdateTodoRequest.cs
-Endpoints/TodoEndpoints.cs
+Endpoints/
+ TodoEndpoints.cs
+ ValidationHelper.cs
 Entities/
  Priority.cs
  Todo.cs
